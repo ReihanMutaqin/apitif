@@ -60,30 +60,61 @@ function App() {
     reader.readAsText(file);
   };
 
-  // Handle URL fetch
+  // Helper for fetching and extracting
+  const fetchAndExtract = async (url) => {
+    const response = await fetch(url);
+    if (!response.ok) {
+      throw new Error(`HTTP Error: ${response.status} from ${url}`);
+    }
+    const jsonData = await response.json();
+    let targetData = jsonData;
+    if (targetData.data && targetData.data.columns && targetData.data.data) {
+      targetData = targetData.data;
+    }
+    if (targetData.columns && targetData.data) {
+      return targetData;
+    }
+    throw new Error(`Invalid JSON format from ${url}`);
+  };
+
+  // Handle URL fetch (single)
   const handleFetchData = async () => {
     setLoading(true);
     setError('');
     
-    // Use the URL provided by the user via state
     const targetUrl = apiUrl;
 
     try {
-      const response = await fetch(targetUrl);
-      if (!response.ok) {
-        throw new Error(`HTTP Error: ${response.status} ${response.statusText}`);
-      }
-      const jsonData = await response.json();
-      processData(jsonData);
+      const result = await fetchAndExtract(targetUrl);
+      setColumns(result.columns);
+      setData(result.data);
     } catch (err) {
-      // Usually CORS or network issues will land here
-      let errorMsg = `Failed to fetch data from ${targetUrl}. `;
-      if (err.message === 'Failed to fetch') {
-        errorMsg += 'This might be due to a CORS issue or the server being unreachable. Check your network or server CORS policy.';
-      } else {
-        errorMsg += err.message;
-      }
-      setError(errorMsg);
+      setError(`Failed to fetch data from ${targetUrl}. ${err.message}`);
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  // Handle Fetch Both (Extreme Mode)
+  const handleFetchBoth = async () => {
+    setLoading(true);
+    setError('');
+    try {
+      const [res1, res2] = await Promise.all([
+        fetchAndExtract('https://10.2.113.250/tif2so/api/data'),
+        fetchAndExtract('http://10.2.113.250/wappr/api/data')
+      ]);
+      // Merge data
+      const mergedData = [...res1.data, ...res2.data];
+      
+      // Combine columns uniquely just in case
+      const mergedColumns = Array.from(new Set([...res1.columns, ...res2.columns]));
+      
+      setColumns(mergedColumns);
+      setData(mergedData);
+    } catch (err) {
+      setError(`Failed to fetch both APIs. ${err.message}`);
       setData(null);
     } finally {
       setLoading(false);
@@ -139,7 +170,10 @@ function App() {
                 placeholder="Enter API URL"
               />
               <button className="btn" onClick={handleFetchData} disabled={loading}>
-                {loading ? 'Fetching...' : 'Fetch Data'}
+                {loading ? 'Fetching...' : 'Fetch 1'}
+              </button>
+              <button className="btn" onClick={handleFetchBoth} disabled={loading} style={{ background: 'var(--primary-hover)' }}>
+                {loading ? 'Fetching...' : 'Fetch 2 (Extreme)'}
               </button>
             </div>
           </div>
