@@ -96,20 +96,21 @@ function App() {
     }
   };
 
-  // Handle Fetch Both (Extreme Mode)
-  const handleFetchBoth = async () => {
+  // Handle Fetch All (Extreme Mode)
+  const handleFetchAll = async () => {
     setLoading(true);
     setError('');
     try {
-      const [res1, res2] = await Promise.all([
+      const [res1, res2, res3] = await Promise.all([
         fetchAndExtract('https://10.2.113.250/tif2so/api/data'),
-        fetchAndExtract('http://10.2.113.250/wappr/api/data')
+        fetchAndExtract('http://10.2.113.250/wappr/api/data'),
+        fetchAndExtract('http://10.2.113.250/workfail/api/data')
       ]);
       // Merge data
-      const mergedData = [...res1.data, ...res2.data];
+      const mergedData = [...res1.data, ...res2.data, ...res3.data];
       
       // Combine columns uniquely just in case
-      const mergedColumns = Array.from(new Set([...res1.columns, ...res2.columns]));
+      const mergedColumns = Array.from(new Set([...res1.columns, ...res2.columns, ...res3.columns]));
       
       setColumns(mergedColumns);
       setData(mergedData);
@@ -158,6 +159,11 @@ function App() {
                   style={{ background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', fontSize: '0.75rem', textDecoration: 'underline' }}
                   onClick={() => setApiUrl('http://10.2.113.250/wappr/api/data')}
                 >Use wappr</button>
+                <button 
+                  type="button" 
+                  style={{ background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', fontSize: '0.75rem', textDecoration: 'underline' }}
+                  onClick={() => setApiUrl('http://10.2.113.250/workfail/api/data')}
+                >Use workfail</button>
               </div>
             </label>
             <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
@@ -172,8 +178,8 @@ function App() {
               <button className="btn" onClick={handleFetchData} disabled={loading}>
                 {loading ? 'Fetching...' : 'Fetch 1'}
               </button>
-              <button className="btn" onClick={handleFetchBoth} disabled={loading} style={{ background: 'var(--primary-hover)' }}>
-                {loading ? 'Fetching...' : 'Fetch 2 (Extreme)'}
+              <button className="btn" onClick={handleFetchAll} disabled={loading} style={{ background: 'var(--primary-hover)' }}>
+                {loading ? 'Fetching...' : 'Fetch 3 (Extreme)'}
               </button>
             </div>
           </div>
