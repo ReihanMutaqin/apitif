@@ -524,6 +524,11 @@ input[type="file"]::file-selector-button:hover {
 .dt-th-no {
   width: 48px;
   text-align: center;
+  position: sticky;
+  left: 0;
+  z-index: 20;
+  border-right: 1px solid var(--border-color);
+  background: var(--bg-card);
   color: var(--text-muted);
 }
 
@@ -582,6 +587,11 @@ input[type="file"]::file-selector-button:hover {
 .dt-td-no {
   text-align: center;
   color: var(--text-muted);
+  position: sticky;
+  left: 0;
+  z-index: 10;
+  border-right: 1px solid var(--border-color);
+  background: inherit;
   font-variant-numeric: tabular-nums;
   padding-left: 0.5rem;
   padding-right: 0.5rem;
