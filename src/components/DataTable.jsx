@@ -81,12 +81,19 @@ const DataTable = ({ data, columns }) => {
     return [...filteredData].sort((a, b) => {
       const aVal = a[sortCol] ?? '';
       const bVal = b[sortCol] ?? '';
-      const aStr = String(aVal).toLowerCase();
-      const bStr = String(bVal).toLowerCase();
-      const aNum = parseFloat(aVal);
-      const bNum = parseFloat(bVal);
-      const isNum = !isNaN(aNum) && !isNaN(bNum);
-      const cmp = isNum ? aNum - bNum : aStr.localeCompare(bStr);
+      
+      // Strict numeric check (prevents dates like 2026-05-20 from being parsed as just 2026)
+      const aNum = Number(aVal);
+      const bNum = Number(bVal);
+      const isNum = aVal !== '' && bVal !== '' && !isNaN(aNum) && !isNaN(bNum);
+      
+      let cmp = 0;
+      if (isNum) {
+        cmp = aNum - bNum;
+      } else {
+        cmp = String(aVal).toLowerCase().localeCompare(String(bVal).toLowerCase());
+      }
+      
       return sortDir === 'asc' ? cmp : -cmp;
     });
   }, [filteredData, sortCol, sortDir]);
