@@ -56,6 +56,7 @@ const DataTable = ({ data, columns }) => {
   const [sortDir, setSortDir] = useState('asc');
   const [jumpPage, setJumpPage] = useState('');
   const [activeFilters, setActiveFilters] = useState({});
+  const [showSearchDetails, setShowSearchDetails] = useState(false);
 
   // Base categorical columns definition (limit to 150 unique values to include WITEL)
   const baseCategoricalCols = useMemo(() => {
@@ -115,7 +116,7 @@ const DataTable = ({ data, columns }) => {
       .filter(t => t.length > 0);
   }, [searchTerm]);
 
-  const filteredData = useMemo(() => {
+  const { filteredData, foundTokens, notFoundTokens } = useMemo(() => {
     let result = data;
 
     // 1. Apply Categorical Filters
@@ -128,19 +129,33 @@ const DataTable = ({ data, columns }) => {
       });
     }
 
+    const found = new Set();
+    const notFound = new Set(searchTokens);
+
     // 2. Apply Global Search
     if (searchTokens.length > 0) {
-      result = result.filter(row =>
-        searchTokens.some(token =>
-          columns.some(col => {
+      result = result.filter(row => {
+        let isRowMatch = false;
+        searchTokens.forEach(token => {
+          const matchInCol = columns.some(col => {
             const val = row[col];
             return val && String(val).toLowerCase().includes(token);
-          })
-        )
-      );
+          });
+          if (matchInCol) {
+            isRowMatch = true;
+            found.add(token);
+            notFound.delete(token);
+          }
+        });
+        return isRowMatch;
+      });
     }
     
-    return result;
+    return {
+      filteredData: result,
+      foundTokens: Array.from(found),
+      notFoundTokens: Array.from(notFound)
+    };
   }, [data, columns, searchTokens, activeFilters]);
 
   const sortedData = useMemo(() => {
@@ -256,18 +271,52 @@ const DataTable = ({ data, columns }) => {
       {/* ── Top toolbar ── */}
       <div className="dt-toolbar">
         <div className="dt-search-wrap">
-          <span className="dt-search-icon">
-            <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
-              <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
-            </svg>
-          </span>
-          <textarea
-            className="dt-search"
-            placeholder="Search… or paste multiple IDs separated by newline / comma"
-            value={searchTerm}
-            onChange={handleSearch}
-            rows={1}
-          />
+          <div style={{ position: 'relative' }}>
+            <span className="dt-search-icon">
+              <svg width="16" height="16" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+                <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+              </svg>
+            </span>
+            <textarea
+              className="dt-search"
+              placeholder="Search… or paste multiple IDs separated by newline / comma"
+              value={searchTerm}
+              onChange={handleSearch}
+              rows={Math.max(1, Math.min(6, searchTerm.split('\n').length))}
+            />
+          </div>
+          {searchTokens.length > 1 && (
+            <div className="dt-search-summary">
+              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
+                Searching <strong>{searchTokens.length}</strong> items: 
+                <span style={{ color: '#34d399', marginLeft: '0.5rem' }}>{foundTokens.length} found</span>, 
+                <span style={{ color: '#fca5a5', marginLeft: '0.5rem' }}>{notFoundTokens.length} not found</span>
+              </span>
+              <button onClick={() => setShowSearchDetails(!showSearchDetails)} className="btn-link">
+                {showSearchDetails ? 'Hide details' : 'View details'}
+              </button>
+            </div>
+          )}
+          {showSearchDetails && searchTokens.length > 1 && (
+            <div className="dt-search-details">
+              {notFoundTokens.length > 0 && (
+                <div className="dt-tokens-group">
+                  <strong>Not Found ({notFoundTokens.length})</strong>
+                  <div className="dt-tokens-list">
+                    {notFoundTokens.map(t => <span key={t} className="dt-token dt-token-notfound">{t}</span>)}
+                  </div>
+                </div>
+              )}
+              {foundTokens.length > 0 && (
+                <div className="dt-tokens-group">
+                  <strong>Found ({foundTokens.length})</strong>
+                  <div className="dt-tokens-list">
+                    {foundTokens.map(t => <span key={t} className="dt-token dt-token-found">{t}</span>)}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         <div className="dt-toolbar-right">
