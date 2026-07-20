@@ -272,6 +272,120 @@ input[type="file"]::file-selector-button:hover {
   transform: translateY(-1px);
 }
 
+/* ─── Filters Bar (Premium Chips) ─── */
+.dt-filter-bar {
+  padding: 0.75rem 1.5rem;
+  background: rgba(15, 23, 42, 0.4);
+  border-bottom: 1px solid var(--border-color);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  overflow: hidden;
+}
+
+.dt-filter-label {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  flex-shrink: 0;
+}
+
+.dt-filter-scroll {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  overflow-x: auto;
+  padding-bottom: 0.2rem;
+  /* Hide scrollbar for clean look */
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.dt-filter-scroll::-webkit-scrollbar {
+  display: none;
+}
+
+.dt-filter-item {
+  display: inline-flex;
+  align-items: center;
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--border-color);
+  border-radius: 9999px;
+  padding: 0.15rem 0.25rem 0.15rem 0.75rem;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.dt-filter-item:hover {
+  background: rgba(255, 255, 255, 0.06);
+  border-color: rgba(255,255,255,0.2);
+}
+
+.dt-filter-item-active {
+  background: rgba(59, 130, 246, 0.15);
+  border-color: rgba(59, 130, 246, 0.4);
+}
+
+.dt-filter-name {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  margin-right: 0.4rem;
+}
+
+.dt-filter-item-active .dt-filter-name {
+  color: #93c5fd;
+}
+
+.dt-filter-select {
+  appearance: none;
+  background: transparent;
+  border: none;
+  color: var(--text-main);
+  font-family: 'Inter', sans-serif;
+  font-size: 0.75rem;
+  font-weight: 500;
+  padding: 0.25rem 1.25rem 0.25rem 0.25rem;
+  cursor: pointer;
+  outline: none;
+  background-image: url("data:image/svg+xml,%3Csvg width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2394a3b8' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.25rem center;
+  max-width: 140px;
+  text-overflow: ellipsis;
+}
+
+.dt-filter-item-active .dt-filter-select {
+  color: #bfdbfe;
+  font-weight: 600;
+}
+
+.dt-filter-select option {
+  background: #0f172a;
+  color: #f8fafc;
+}
+
+.dt-filter-clear {
+  background: rgba(239, 68, 68, 0.1);
+  border: 1px solid rgba(239, 68, 68, 0.3);
+  color: #f87171;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.4rem 0.75rem;
+  border-radius: 9999px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.dt-filter-clear:hover {
+  background: rgba(239, 68, 68, 0.2);
+}
+
 /* ─── Table Container ─── */
 .dt-table-container {
   overflow-x: auto;

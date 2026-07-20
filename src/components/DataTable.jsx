@@ -97,6 +97,12 @@ const DataTable = ({ data, columns }) => {
           uniqueValues.add(val);
         }
       }
+      
+      // FIX: Always include the currently active filter value so it doesn't disappear when cascading
+      if (activeFilters[col]) {
+        uniqueValues.add(activeFilters[col]);
+      }
+      
       return { col, options: Array.from(uniqueValues).sort() };
     });
   }, [baseCategoricalCols, data, activeFilters]);
@@ -287,33 +293,44 @@ const DataTable = ({ data, columns }) => {
         </div>
       </div>
 
-      {/* ── Active Filters Bar (Auto-detected categorical columns) ── */}
+      {/* ── Active Filters Bar (Premium Scrollable Chips) ── */}
       {filterableColumns.length > 0 && (
-        <div style={{ padding: '0.75rem 1.5rem', background: 'rgba(15, 23, 42, 0.3)', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>FILTER BY:</span>
-          {filterableColumns.map(({ col, options }) => (
-            <select
-              key={col}
-              className="dt-rows-select"
-              style={{ padding: '0.3rem 1.8rem 0.3rem 0.6rem', fontSize: '0.75rem' }}
-              value={activeFilters[col] || ''}
-              onChange={(e) => {
-                setActiveFilters(prev => ({ ...prev, [col]: e.target.value }));
-                setCurrentPage(1);
-              }}
-            >
-              <option value="">All {col}</option>
-              {options.map(opt => (
-                <option key={opt} value={opt}>{opt}</option>
-              ))}
-            </select>
-          ))}
+        <div className="dt-filter-bar">
+          <div className="dt-filter-label">
+            <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
+              <path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V19l-4 2v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
+            </svg>
+            FILTERS
+          </div>
+          <div className="dt-filter-scroll">
+            {filterableColumns.map(({ col, options }) => {
+              const isActive = !!activeFilters[col];
+              return (
+                <div key={col} className={`dt-filter-item ${isActive ? 'dt-filter-item-active' : ''}`}>
+                  <span className="dt-filter-name">{col}</span>
+                  <select
+                    className="dt-filter-select"
+                    value={activeFilters[col] || ''}
+                    onChange={(e) => {
+                      setActiveFilters(prev => ({ ...prev, [col]: e.target.value }));
+                      setCurrentPage(1);
+                    }}
+                  >
+                    <option value="">All</option>
+                    {options.map(opt => (
+                      <option key={opt} value={opt}>{opt}</option>
+                    ))}
+                  </select>
+                </div>
+              );
+            })}
+          </div>
           {Object.values(activeFilters).some(v => v !== '') && (
             <button 
+              className="dt-filter-clear"
               onClick={() => { setActiveFilters({}); setCurrentPage(1); }}
-              style={{ background: 'none', border: 'none', color: '#f87171', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}
             >
-              Clear Filters
+              Clear All
             </button>
           )}
         </div>
