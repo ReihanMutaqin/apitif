@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import DataTable from './components/DataTable';
 import './index.css'; // Make sure the premium styles are applied
 
@@ -166,6 +166,12 @@ function App() {
       setLoading(false);
     }
   };
+
+  // Auto fetch data on initial load
+  useEffect(() => {
+    handleFetchAll();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div className="app-container">
