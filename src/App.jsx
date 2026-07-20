@@ -124,62 +124,84 @@ function App() {
 
   return (
     <div className="app-container">
-      <div className="glass-panel">
-        <h1>Data Importer Dashboard</h1>
-        <p>Import JSON data via local upload or fetch from the API link to view and search.</p>
-        
-        <div className="controls-wrapper" style={{ marginTop: '1.5rem', alignItems: 'flex-start' }}>
-          <div className="input-group">
-            <label style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-              Local File Upload
-            </label>
-            <input 
-              type="file" 
-              accept=".json"
-              onChange={handleFileUpload}
-              ref={fileInputRef}
-            />
+      {/* ── Top Header ── */}
+      <header style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+        <h1 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--primary-color)' }}>
+            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+            <line x1="8" y1="21" x2="16" y2="21"></line>
+            <line x1="12" y1="17" x2="12" y2="21"></line>
+          </svg>
+          Data Importer
+        </h1>
+        <p>Import JSON data via local file upload or fetch from remote API links</p>
+      </header>
+
+      {/* ── Control Panel ── */}
+      <div className="glass-panel" style={{ padding: '0', overflow: 'hidden' }}>
+        <div className="controls-wrapper" style={{ border: 'none', borderRadius: '0', background: 'transparent' }}>
+          
+          {/* File Upload Section */}
+          <div className="input-group" style={{ flex: '1 1 300px' }}>
+            <label className="input-label">Local File Upload</label>
+            <div style={{ position: 'relative', display: 'flex', alignItems: 'center' }}>
+              <input 
+                type="file" 
+                accept=".json"
+                onChange={handleFileUpload}
+                ref={fileInputRef}
+                style={{ width: '100%', padding: '0.75rem', borderStyle: 'dashed' }}
+              />
+            </div>
           </div>
           
-          <div className="input-group" style={{ display: 'flex', justifyContent: 'flex-end', height: '100%', paddingTop: '1.25rem' }}>
-            <span style={{ margin: 'auto 1rem', color: 'var(--text-muted)', fontWeight: 'bold' }}>OR</span>
-          </div>
+          <div style={{ padding: '1rem', color: 'var(--text-muted)', fontWeight: 600, fontSize: '0.75rem' }}>OR</div>
 
-          <div className="input-group" style={{ flex: 1, minWidth: '300px' }}>
-            <label style={{ fontSize: '0.875rem', fontWeight: 600, color: 'var(--text-muted)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <span>Fetch from API Link</span>
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
+          {/* API Fetch Section */}
+          <div className="input-group" style={{ flex: '2 1 500px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.25rem' }}>
+              <label className="input-label">Fetch from API</label>
+              <div className="api-tabs">
                 <button 
                   type="button" 
-                  style={{ background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', fontSize: '0.75rem', textDecoration: 'underline' }}
+                  className={`api-tab ${apiUrl.includes('tif2so') ? 'active' : ''}`}
                   onClick={() => setApiUrl('https://10.2.113.250/tif2so/api/data')}
-                >Use tif2so</button>
+                >tif2so</button>
                 <button 
                   type="button" 
-                  style={{ background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', fontSize: '0.75rem', textDecoration: 'underline' }}
+                  className={`api-tab ${apiUrl.includes('wappr') ? 'active' : ''}`}
                   onClick={() => setApiUrl('http://10.2.113.250/wappr/api/data')}
-                >Use wappr</button>
+                >wappr</button>
                 <button 
                   type="button" 
-                  style={{ background: 'none', border: 'none', color: 'var(--primary-color)', cursor: 'pointer', fontSize: '0.75rem', textDecoration: 'underline' }}
+                  className={`api-tab ${apiUrl.includes('workfail') ? 'active' : ''}`}
                   onClick={() => setApiUrl('http://10.2.113.250/workfail/api/data')}
-                >Use workfail</button>
+                >workfail</button>
               </div>
-            </label>
-            <div style={{ display: 'flex', gap: '1rem', marginTop: '0.5rem' }}>
-              <input 
-                type="text" 
-                value={apiUrl} 
-                onChange={(e) => setApiUrl(e.target.value)}
-                style={{ flex: 1 }}
-                title="API URL"
-                placeholder="Enter API URL"
-              />
-              <button className="btn" onClick={handleFetchData} disabled={loading}>
-                {loading ? 'Fetching...' : 'Fetch 1'}
+            </div>
+            
+            <div style={{ display: 'flex', gap: '0.75rem' }}>
+              <div style={{ position: 'relative', flex: 1 }}>
+                <div style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--text-muted)' }}>
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path>
+                    <path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path>
+                  </svg>
+                </div>
+                <input 
+                  type="text" 
+                  value={apiUrl} 
+                  onChange={(e) => setApiUrl(e.target.value)}
+                  style={{ width: '100%', paddingLeft: '2.5rem' }}
+                  title="API URL"
+                  placeholder="https://..."
+                />
+              </div>
+              <button className="btn btn-primary" onClick={handleFetchData} disabled={loading} style={{ padding: '0 1.5rem' }}>
+                {loading ? 'Fetching...' : 'Fetch'}
               </button>
-              <button className="btn" onClick={handleFetchAll} disabled={loading} style={{ background: 'var(--primary-hover)' }}>
-                {loading ? 'Fetching...' : 'Fetch 3 (Extreme)'}
+              <button className="btn" onClick={handleFetchAll} disabled={loading} style={{ background: 'var(--bg-hover)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
+                Fetch All
               </button>
             </div>
           </div>
@@ -187,25 +209,36 @@ function App() {
 
         {error && (
           <div style={{ 
-            marginTop: '1.5rem', 
-            padding: '1rem', 
+            margin: '0 1.5rem 1.5rem 1.5rem', 
+            padding: '1rem 1.25rem', 
             background: 'rgba(239, 68, 68, 0.1)', 
-            border: '1px solid rgba(239, 68, 68, 0.3)',
+            border: '1px solid rgba(239, 68, 68, 0.2)',
             borderRadius: '0.5rem',
-            color: '#f87171'
+            color: '#fca5a5',
+            fontSize: '0.875rem',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '0.75rem'
           }}>
-            <strong>Error: </strong> {error}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <circle cx="12" cy="12" r="10"></circle>
+              <line x1="12" y1="8" x2="12" y2="12"></line>
+              <line x1="12" y1="16" x2="12.01" y2="16"></line>
+            </svg>
+            <span>{error}</span>
           </div>
         )}
       </div>
 
+      {/* ── Loading State ── */}
       {loading && !data && (
         <div className="glass-panel loader-container">
           <div className="loader"></div>
-          <p>Processing data, please wait...</p>
+          <p style={{ fontWeight: 500 }}>Processing data, please wait...</p>
         </div>
       )}
 
+      {/* ── Data Table ── */}
       {!loading && data && columns.length > 0 && (
         <DataTable data={data} columns={columns} />
       )}
