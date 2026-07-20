@@ -9,7 +9,6 @@ function App() {
   const [error, setError] = useState('');
   const [apiUrl, setApiUrl] = useState('http://10.2.113.250/wappr/api/data');
   const [duplicatesReport, setDuplicatesReport] = useState(null);
-  const [showDupModal, setShowDupModal] = useState(false);
   
   const fileInputRef = useRef(null);
 
@@ -274,74 +273,6 @@ function App() {
         )}
       </div>
 
-      {/* ── Duplicate Data Alert ── */}
-      {duplicatesReport && duplicatesReport.length > 0 && (
-        <div style={{ 
-          margin: '0 1.5rem 1.5rem 1.5rem', 
-          padding: '0.75rem 1.25rem', 
-          background: 'rgba(245, 158, 11, 0.1)', 
-          border: '1px solid rgba(245, 158, 11, 0.3)',
-          borderRadius: '0.5rem',
-          color: '#fbbf24',
-          fontSize: '0.875rem',
-          display: 'flex',
-          justifyContent: 'space-between',
-          alignItems: 'center'
-        }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
-              <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path>
-              <line x1="12" y1="9" x2="12" y2="13"></line>
-              <line x1="12" y1="17" x2="12.01" y2="17"></line>
-            </svg>
-            <span>Deduplication automatically merged <strong>{duplicatesReport.length}</strong> identical records.</span>
-          </div>
-          <button 
-            onClick={() => setShowDupModal(true)} 
-            style={{ background: 'rgba(245, 158, 11, 0.2)', border: 'none', color: '#fcd34d', padding: '0.375rem 0.75rem', borderRadius: '0.375rem', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}
-          >
-            View Details
-          </button>
-        </div>
-      )}
-
-      {/* ── Duplicates Modal ── */}
-      {showDupModal && (
-        <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)', padding: '1rem' }}>
-          <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '0.5rem', width: '100%', maxWidth: '500px', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-main)' }}>Duplicate Records</h3>
-              <button onClick={() => setShowDupModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-              </button>
-            </div>
-            <div style={{ padding: '1rem 1.25rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {duplicatesReport.map((dup, idx) => (
-                <div key={idx} style={{ background: 'var(--bg-dark)', padding: '0.75rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)' }}>
-                  <div style={{ fontSize: '0.8125rem', color: 'var(--text-main)', marginBottom: '0.5rem', fontWeight: 500 }}>
-                    {dup.workorder}
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
-                    {dup.sources.map(src => {
-                      let color = '#9ca3af';
-                      let bg = 'rgba(156,163,175,0.1)';
-                      if (src === 'wappr') { color = '#3b82f6'; bg = 'rgba(59,130,246,0.1)'; }
-                      else if (src === 'workfail') { color = '#ef4444'; bg = 'rgba(239,68,68,0.1)'; }
-                      else if (src === 'tif2so') { color = '#10b981'; bg = 'rgba(16,185,129,0.1)'; }
-                      return (
-                        <span key={src} style={{ fontSize: '0.65rem', padding: '0.125rem 0.375rem', borderRadius: '0.25rem', background: bg, color: color, border: `1px solid ${bg}` }}>
-                          Found in {src.toUpperCase()}
-                        </span>
-                      );
-                    })}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* ── Loading State ── */}
       {loading && !data && (
         <div className="glass-panel loader-container">
@@ -352,7 +283,7 @@ function App() {
 
       {/* ── Data Table ── */}
       {!loading && data && columns.length > 0 && (
-        <DataTable data={data} columns={columns} />
+        <DataTable data={data} columns={columns} duplicatesReport={duplicatesReport} />
       )}
     </div>
   );
