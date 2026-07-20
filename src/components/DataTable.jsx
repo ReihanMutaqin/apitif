@@ -304,13 +304,13 @@ const DataTable = ({ data, columns, duplicatesReport }) => {
               <line x1="12" y1="9" x2="12" y2="13"></line>
               <line x1="12" y1="17" x2="12.01" y2="17"></line>
             </svg>
-            <span>Found <strong>{filteredDuplicates.length}</strong> identical merged records in current view.</span>
+            <span>Ditemukan <strong>{filteredDuplicates.length}</strong> data duplikat yang digabungkan pada tampilan ini.</span>
           </div>
           <button 
             onClick={() => setShowDupModal(true)} 
             style={{ background: 'rgba(245, 158, 11, 0.2)', border: 'none', color: '#fcd34d', padding: '0.375rem 0.75rem', borderRadius: '0.375rem', cursor: 'pointer', fontSize: '0.75rem', fontWeight: 600 }}
           >
-            View Details
+            Lihat Detail
           </button>
         </div>
       )}
@@ -320,7 +320,7 @@ const DataTable = ({ data, columns, duplicatesReport }) => {
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)', padding: '1rem' }}>
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '0.5rem', width: '100%', maxWidth: '500px', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
             <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-main)' }}>Duplicate Records</h3>
+              <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-main)' }}>Data Duplikat</h3>
               <button onClick={() => setShowDupModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
@@ -340,7 +340,7 @@ const DataTable = ({ data, columns, duplicatesReport }) => {
                       else if (src === 'tif2so') { color = '#10b981'; bg = 'rgba(16,185,129,0.1)'; }
                       return (
                         <span key={src} style={{ fontSize: '0.65rem', padding: '0.125rem 0.375rem', borderRadius: '0.25rem', background: bg, color: color, border: `1px solid ${bg}` }}>
-                          Found in {src.toUpperCase()}
+                          Ditemukan di {src.toUpperCase()}
                         </span>
                       );
                     })}
@@ -363,7 +363,7 @@ const DataTable = ({ data, columns, duplicatesReport }) => {
             </span>
             <textarea
               className="dt-search"
-              placeholder="Search… or paste multiple IDs separated by newline / comma"
+              placeholder="Cari… atau tempel beberapa ID dipisahkan enter / koma"
               value={searchTerm}
               onChange={handleSearch}
               rows={Math.max(1, Math.min(6, searchTerm.split('\n').length))}
@@ -371,30 +371,30 @@ const DataTable = ({ data, columns, duplicatesReport }) => {
           </div>
           {searchTokens.length > 1 && (
             <div className="dt-search-summary">
-              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>
-                Searching <strong>{searchTokens.length}</strong> items: 
-                <span style={{ color: '#34d399', marginLeft: '0.5rem' }}>{foundTokens.length} found</span>, 
-                <span style={{ color: '#fca5a5', marginLeft: '0.5rem' }}>{notFoundTokens.length} not found</span>
+              <span className="dt-search-summary-text">
+                Mencari <strong>{searchTokens.length}</strong> item: 
+                <span style={{ color: '#34d399', marginLeft: '0.5rem' }}>{foundTokens.length} ditemukan</span>, 
+                <span style={{ color: '#fca5a5', marginLeft: '0.5rem' }}>{notFoundTokens.length} tidak ditemukan</span>
               </span>
               <button onClick={() => setShowSearchDetails(!showSearchDetails)} className="btn-link">
-                {showSearchDetails ? 'Hide details' : 'View details'}
+                {showSearchDetails ? 'Sembunyikan detail' : 'Lihat detail'}
               </button>
             </div>
           )}
           {showSearchDetails && searchTokens.length > 1 && (
             <div className="dt-search-details">
               {notFoundTokens.length > 0 && (
-                <div className="dt-tokens-group">
-                  <strong>Not Found ({notFoundTokens.length})</strong>
-                  <div className="dt-tokens-list">
+                <div className="dt-search-details-group">
+                  <strong>Tidak Ditemukan ({notFoundTokens.length})</strong>
+                  <div className="dt-search-details-tokens">
                     {notFoundTokens.map(t => <span key={t} className="dt-token dt-token-notfound">{t}</span>)}
                   </div>
                 </div>
               )}
               {foundTokens.length > 0 && (
-                <div className="dt-tokens-group">
-                  <strong>Found ({foundTokens.length})</strong>
-                  <div className="dt-tokens-list">
+                <div className="dt-search-details-group">
+                  <strong>Ditemukan ({foundTokens.length})</strong>
+                  <div className="dt-search-details-tokens">
                     {foundTokens.map(t => <span key={t} className="dt-token dt-token-found">{t}</span>)}
                   </div>
                 </div>
@@ -403,25 +403,24 @@ const DataTable = ({ data, columns, duplicatesReport }) => {
           )}
         </div>
 
-        <div className="dt-toolbar-right">
-          <div className="dt-stats">
-            {searchTokens.length > 0
-              ? <><strong>{filteredData.length.toLocaleString()}</strong> match</>
-              : <><strong>{data.length.toLocaleString()}</strong> records</>
-            }
-          </div>
-
-          <select className="dt-rows-select" value={rowsPerPage} onChange={handleRowsPerPage} title="Rows per page">
-            {ROWS_OPTIONS.map(n => <option key={n} value={n}>{n} rows</option>)}
+        <div className="dt-toolbar-actions">
+          {searchTokens.length > 0 && (
+            <div className="dt-results-count">
+              <span>{filteredData.length}</span> baris
+            </div>
+          )}
+          
+          <select className="dt-rows-select" value={rowsPerPage} onChange={handleRowsPerPage} title="Baris per halaman">
+            {ROWS_OPTIONS.map(n => <option key={n} value={n}>{n} baris</option>)}
           </select>
 
-          <button className="dt-export-btn" onClick={handleExportCSV} title="Export visible data to CSV">
+          <button className="dt-export-btn" onClick={handleExportCSV} title="Ekspor data yang tampil ke CSV">
             <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
               <polyline points="7 10 12 15 17 10"/>
               <line x1="12" y1="15" x2="12" y2="3"/>
             </svg>
-            Export CSV
+            Ekspor CSV
           </button>
         </div>
       </div>
@@ -433,7 +432,7 @@ const DataTable = ({ data, columns, duplicatesReport }) => {
             <svg width="14" height="14" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">
               <path d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V19l-4 2v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"/>
             </svg>
-            FILTERS
+            FILTER
           </div>
           <div className="dt-filter-scroll">
             {filterableColumns.map(({ col, options }) => {
@@ -449,7 +448,7 @@ const DataTable = ({ data, columns, duplicatesReport }) => {
                       setCurrentPage(1);
                     }}
                   >
-                    <option value="">All</option>
+                    <option value="">Semua</option>
                     {options.map(opt => (
                       <option key={opt} value={opt}>{opt}</option>
                     ))}
@@ -463,7 +462,7 @@ const DataTable = ({ data, columns, duplicatesReport }) => {
               className="dt-filter-clear"
               onClick={() => { setActiveFilters({}); setCurrentPage(1); }}
             >
-              Clear All
+              Hapus Semua
             </button>
           )}
         </div>
@@ -518,11 +517,11 @@ const DataTable = ({ data, columns, duplicatesReport }) => {
             ) : (
               <tr>
                 <td colSpan={columns.length + 1} className="dt-empty">
-                  <div className="dt-empty-inner">
-                    <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1.5" opacity="0.3">
-                      <circle cx="11" cy="11" r="8"/><path d="M21 21l-4.35-4.35"/>
+                  <div className="dt-empty-content">
+                    <svg width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="1" style={{ color: 'var(--text-muted)', marginBottom: '1rem' }}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
                     </svg>
-                    <span>No records found for <strong>"{searchTerm}"</strong></span>
+                    <span>Tidak ada data ditemukan untuk <strong>"{searchTerm}"</strong></span>
                   </div>
                 </td>
               </tr>
@@ -535,7 +534,7 @@ const DataTable = ({ data, columns, duplicatesReport }) => {
       {totalPages > 1 && (
         <div className="dt-pagination">
           <div className="dt-page-info">
-            Showing <strong>{startRow.toLocaleString()}–{endRow.toLocaleString()}</strong> of <strong>{sortedData.length.toLocaleString()}</strong>
+            Menampilkan <strong>{startRow.toLocaleString()}–{endRow.toLocaleString()}</strong> dari <strong>{sortedData.length.toLocaleString()}</strong> entri
           </div>
 
           <div className="dt-page-controls">
@@ -543,13 +542,13 @@ const DataTable = ({ data, columns, duplicatesReport }) => {
               className="dt-page-btn dt-page-arrow"
               onClick={() => setCurrentPage(1)}
               disabled={currentPage === 1}
-              title="First page"
+              title="Halaman pertama"
             >«</button>
             <button
               className="dt-page-btn dt-page-arrow"
               onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              title="Previous page"
+              title="Halaman sebelumnya"
             >‹</button>
 
             {pageNumbers.map((p, i) =>
@@ -568,18 +567,18 @@ const DataTable = ({ data, columns, duplicatesReport }) => {
               className="dt-page-btn dt-page-arrow"
               onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              title="Next page"
+              title="Halaman selanjutnya"
             >›</button>
             <button
               className="dt-page-btn dt-page-arrow"
               onClick={() => setCurrentPage(totalPages)}
               disabled={currentPage === totalPages}
-              title="Last page"
+              title="Halaman terakhir"
             >»</button>
           </div>
 
           <form className="dt-jump-form" onSubmit={handleJumpPage}>
-            <span className="dt-jump-label">Go to</span>
+            <span className="dt-jump-label">Pergi ke</span>
             <input
               className="dt-jump-input"
               type="number"

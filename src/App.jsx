@@ -241,10 +241,10 @@ function App() {
                 />
               </div>
               <button className="btn btn-primary" onClick={handleFetchData} disabled={loading} style={{ padding: '0 1.5rem' }}>
-                {loading ? 'Fetching...' : 'Fetch'}
+                {loading ? 'Mengambil...' : 'Ambil Data'}
               </button>
               <button className="btn" onClick={handleFetchAll} disabled={loading} style={{ background: 'var(--bg-hover)', color: 'var(--text-main)', border: '1px solid var(--border-color)' }}>
-                Fetch All
+                Ambil Semua
               </button>
             </div>
           </div>
@@ -277,7 +277,7 @@ function App() {
       {loading && !data && (
         <div className="glass-panel loader-container">
           <div className="loader"></div>
-          <p style={{ fontWeight: 500 }}>Processing data, please wait...</p>
+          <p style={{ fontWeight: 500 }}>Memproses data, mohon tunggu...</p>
         </div>
       )}
 
