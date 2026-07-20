@@ -57,29 +57,49 @@ const DataTable = ({ data, columns }) => {
   const [jumpPage, setJumpPage] = useState('');
   const [activeFilters, setActiveFilters] = useState({});
 
-  // Auto-detect categorical columns (columns with 1 to 20 unique values) for filtering
-  const filterableColumns = useMemo(() => {
-    const candidates = [];
+  // Base categorical columns definition (limit to 150 unique values to include WITEL)
+  const baseCategoricalCols = useMemo(() => {
+    const cols = [];
     columns.forEach(col => {
       const uniqueValues = new Set();
       let hasTooMany = false;
       for (const row of data) {
         const val = row[col];
-        if (val !== null && val !== undefined && val !== '') {
-          uniqueValues.add(val);
-        }
-        if (uniqueValues.size > 20) {
+        if (val !== null && val !== undefined && val !== '') uniqueValues.add(val);
+        if (uniqueValues.size > 150) {
           hasTooMany = true;
           break;
         }
       }
-      // If it has between 1 and 20 unique values, it's a good categorical filter candidate
       if (!hasTooMany && uniqueValues.size > 0 && uniqueValues.size < data.length) {
-        candidates.push({ col, options: Array.from(uniqueValues).sort() });
+        cols.push(col);
       }
     });
-    return candidates;
+    return cols;
   }, [data, columns]);
+
+  // Dynamic filter options based on OTHER active filters (Cascading Filters)
+  const filterableColumns = useMemo(() => {
+    return baseCategoricalCols.map(col => {
+      // Data filtered by all filters EXCEPT this `col`
+      const dataForThisCol = data.filter(row => {
+        return Object.entries(activeFilters).every(([fCol, fVal]) => {
+          if (fCol === col) return true; // ignore this column's own filter
+          if (!fVal) return true;
+          return String(row[fCol]) === String(fVal);
+        });
+      });
+      
+      const uniqueValues = new Set();
+      for (const row of dataForThisCol) {
+        const val = row[col];
+        if (val !== null && val !== undefined && val !== '') {
+          uniqueValues.add(val);
+        }
+      }
+      return { col, options: Array.from(uniqueValues).sort() };
+    });
+  }, [baseCategoricalCols, data, activeFilters]);
 
   const searchTokens = useMemo(() => {
     if (!searchTerm) return [];
