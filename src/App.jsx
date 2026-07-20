@@ -11,6 +11,23 @@ function App() {
   
   const fileInputRef = useRef(null);
 
+  // Helper to deduplicate exact matching rows
+  const deduplicateData = (dataArray) => {
+    if (!Array.isArray(dataArray)) return dataArray;
+    const uniqueMap = new Map();
+    dataArray.forEach(row => {
+      // Sort keys to ensure deterministic stringification
+      const sortedKeys = Object.keys(row).sort();
+      const obj = {};
+      sortedKeys.forEach(k => { obj[k] = row[k]; });
+      const rowStr = JSON.stringify(obj);
+      if (!uniqueMap.has(rowStr)) {
+        uniqueMap.set(rowStr, row);
+      }
+    });
+    return Array.from(uniqueMap.values());
+  };
+
   // Process the JSON format based on the sample data
   const processData = (jsonData) => {
     try {
@@ -22,7 +39,7 @@ function App() {
       
       if (targetData.columns && targetData.data) {
         setColumns(targetData.columns);
-        setData(targetData.data);
+        setData(deduplicateData(targetData.data));
         setError('');
       } else {
         throw new Error('Invalid JSON format. Expected an object containing "columns" and "data" arrays.');
@@ -87,7 +104,7 @@ function App() {
     try {
       const result = await fetchAndExtract(targetUrl);
       setColumns(result.columns);
-      setData(result.data);
+      setData(deduplicateData(result.data));
     } catch (err) {
       setError(`Failed to fetch data from ${targetUrl}. ${err.message}`);
       setData(null);
@@ -113,7 +130,7 @@ function App() {
       const mergedColumns = Array.from(new Set([...res1.columns, ...res2.columns, ...res3.columns]));
       
       setColumns(mergedColumns);
-      setData(mergedData);
+      setData(deduplicateData(mergedData));
     } catch (err) {
       setError(`Failed to fetch both APIs. ${err.message}`);
       setData(null);
