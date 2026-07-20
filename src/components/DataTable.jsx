@@ -55,6 +55,31 @@ const DataTable = ({ data, columns }) => {
   const [sortCol, setSortCol] = useState(null);
   const [sortDir, setSortDir] = useState('asc');
   const [jumpPage, setJumpPage] = useState('');
+  const [activeFilters, setActiveFilters] = useState({});
+
+  // Auto-detect categorical columns (columns with 1 to 20 unique values) for filtering
+  const filterableColumns = useMemo(() => {
+    const candidates = [];
+    columns.forEach(col => {
+      const uniqueValues = new Set();
+      let hasTooMany = false;
+      for (const row of data) {
+        const val = row[col];
+        if (val !== null && val !== undefined && val !== '') {
+          uniqueValues.add(val);
+        }
+        if (uniqueValues.size > 20) {
+          hasTooMany = true;
+          break;
+        }
+      }
+      // If it has between 1 and 20 unique values, it's a good categorical filter candidate
+      if (!hasTooMany && uniqueValues.size > 0 && uniqueValues.size < data.length) {
+        candidates.push({ col, options: Array.from(uniqueValues).sort() });
+      }
+    });
+    return candidates;
+  }, [data, columns]);
 
   const searchTokens = useMemo(() => {
     if (!searchTerm) return [];
@@ -65,16 +90,32 @@ const DataTable = ({ data, columns }) => {
   }, [searchTerm]);
 
   const filteredData = useMemo(() => {
-    if (searchTokens.length === 0) return data;
-    return data.filter(row =>
-      searchTokens.some(token =>
-        columns.some(col => {
-          const val = row[col];
-          return val && String(val).toLowerCase().includes(token);
-        })
-      )
-    );
-  }, [data, columns, searchTokens]);
+    let result = data;
+
+    // 1. Apply Categorical Filters
+    if (Object.keys(activeFilters).length > 0) {
+      result = result.filter(row => {
+        return Object.entries(activeFilters).every(([col, val]) => {
+          if (!val) return true; // Skip empty filters
+          return String(row[col]) === String(val);
+        });
+      });
+    }
+
+    // 2. Apply Global Search
+    if (searchTokens.length > 0) {
+      result = result.filter(row =>
+        searchTokens.some(token =>
+          columns.some(col => {
+            const val = row[col];
+            return val && String(val).toLowerCase().includes(token);
+          })
+        )
+      );
+    }
+    
+    return result;
+  }, [data, columns, searchTokens, activeFilters]);
 
   const sortedData = useMemo(() => {
     if (!sortCol) return filteredData;
@@ -225,6 +266,38 @@ const DataTable = ({ data, columns }) => {
           </button>
         </div>
       </div>
+
+      {/* ── Active Filters Bar (Auto-detected categorical columns) ── */}
+      {filterableColumns.length > 0 && (
+        <div style={{ padding: '0.75rem 1.5rem', background: 'rgba(15, 23, 42, 0.3)', borderBottom: '1px solid var(--border-color)', display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
+          <span style={{ fontSize: '0.8rem', color: 'var(--text-muted)', fontWeight: 600 }}>FILTER BY:</span>
+          {filterableColumns.map(({ col, options }) => (
+            <select
+              key={col}
+              className="dt-rows-select"
+              style={{ padding: '0.3rem 1.8rem 0.3rem 0.6rem', fontSize: '0.75rem' }}
+              value={activeFilters[col] || ''}
+              onChange={(e) => {
+                setActiveFilters(prev => ({ ...prev, [col]: e.target.value }));
+                setCurrentPage(1);
+              }}
+            >
+              <option value="">All {col}</option>
+              {options.map(opt => (
+                <option key={opt} value={opt}>{opt}</option>
+              ))}
+            </select>
+          ))}
+          {Object.values(activeFilters).some(v => v !== '') && (
+            <button 
+              onClick={() => { setActiveFilters({}); setCurrentPage(1); }}
+              style={{ background: 'none', border: 'none', color: '#f87171', fontSize: '0.75rem', cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              Clear Filters
+            </button>
+          )}
+        </div>
+      )}
 
       {/* ── Table ── */}
       <div className="dt-table-container">
