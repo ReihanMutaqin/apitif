@@ -16,13 +16,23 @@ function App() {
     if (!Array.isArray(dataArray)) return dataArray;
     const uniqueMap = new Map();
     dataArray.forEach(row => {
-      // Sort keys to ensure deterministic stringification
-      const sortedKeys = Object.keys(row).sort();
-      const obj = {};
-      sortedKeys.forEach(k => { obj[k] = row[k]; });
-      const rowStr = JSON.stringify(obj);
-      if (!uniqueMap.has(rowStr)) {
-        uniqueMap.set(rowStr, row);
+      // Find the workorder key regardless of exact case/spacing
+      const woKey = Object.keys(row).find(k => k.trim().toUpperCase() === 'WORKORDER');
+      const workorder = woKey ? String(row[woKey]).trim() : null;
+      
+      if (workorder) {
+        if (!uniqueMap.has(workorder)) {
+          uniqueMap.set(workorder, row);
+        }
+      } else {
+        // Fallback: Sort keys to ensure deterministic stringification
+        const sortedKeys = Object.keys(row).sort();
+        const obj = {};
+        sortedKeys.forEach(k => { obj[k] = row[k]; });
+        const rowStr = JSON.stringify(obj);
+        if (!uniqueMap.has(rowStr)) {
+          uniqueMap.set(rowStr, row);
+        }
       }
     });
     return Array.from(uniqueMap.values());
