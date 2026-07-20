@@ -26,7 +26,7 @@ function App() {
       const key = workorder || JSON.stringify(Object.keys(row).sort().reduce((acc, k) => ({...acc, [k]: row[k]}), {}));
       
       if (!uniqueMap.has(key)) {
-        uniqueMap.set(key, { ...row, _sources: [row._source || 'Unknown'] });
+        uniqueMap.set(key, { ...row, _sources: [row._source || 'Unknown'], _versions: [{...row}] });
       } else {
         // Duplicate found!
         const original = uniqueMap.get(key);
@@ -34,9 +34,11 @@ function App() {
         if (!original._sources.includes(newSource)) {
           original._sources.push(newSource);
         }
+        original._versions.push({ ...row });
         dupMap.set(key, {
           workorder: workorder || 'Unknown WO',
-          sources: original._sources
+          sources: original._sources,
+          versions: original._versions
         });
       }
     });

@@ -351,16 +351,47 @@ const DataTable = ({ data, columns, duplicatesReport }) => {
                       );
                     })}
                   </div>
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.5rem' }}>
-                    {selectedDup.fullData && Object.entries(selectedDup.fullData).map(([k, v]) => {
-                      if (k === '_source' || k === '_sources') return null;
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                    {(() => {
+                      const versions = selectedDup.versions || [];
+                      if (versions.length === 0) return null;
+                      
+                      const allKeys = Array.from(new Set(versions.flatMap(v => Object.keys(v))));
+                      const displayKeys = allKeys.filter(k => k !== '_source' && k !== '_sources' && k !== '_versions');
+                      
                       return (
-                        <div key={k} style={{ padding: '0.5rem', background: 'var(--bg-dark)', borderRadius: '0.375rem', border: '1px solid var(--border-color)' }}>
-                           <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem', fontWeight: 600 }}>{k}</div>
-                           <div style={{ fontSize: '0.8125rem', color: 'var(--text-main)', wordBreak: 'break-word' }}>{v != null ? String(v) : '-'}</div>
+                        <div style={{ overflowX: 'auto', borderRadius: '0.375rem', border: '1px solid var(--border-color)', background: 'var(--bg-dark)' }}>
+                          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.75rem', textAlign: 'left' }}>
+                            <thead>
+                              <tr style={{ background: 'var(--bg-card)', borderBottom: '1px solid var(--border-color)' }}>
+                                <th style={{ padding: '0.5rem', borderRight: '1px solid var(--border-color)', color: 'var(--text-muted)', fontWeight: 600 }}>Kolom</th>
+                                {versions.map((v, i) => (
+                                  <th key={i} style={{ padding: '0.5rem', borderRight: i < versions.length-1 ? '1px solid var(--border-color)' : 'none', color: 'var(--text-main)', fontWeight: 600 }}>
+                                    {v._source ? v._source.toUpperCase() : `Versi ${i+1}`}
+                                  </th>
+                                ))}
+                              </tr>
+                            </thead>
+                            <tbody>
+                              {displayKeys.map((k, rIdx) => {
+                                const vals = versions.map(v => v[k] != null ? String(v[k]).trim() : '-');
+                                const isDiff = new Set(vals).size > 1;
+                                return (
+                                  <tr key={k} style={{ borderBottom: rIdx < displayKeys.length-1 ? '1px solid var(--border-color)' : 'none', background: isDiff ? 'rgba(239, 68, 68, 0.08)' : 'transparent' }}>
+                                    <td style={{ padding: '0.5rem', borderRight: '1px solid var(--border-color)', fontWeight: 600, color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>{k}</td>
+                                    {vals.map((val, i) => (
+                                      <td key={i} style={{ padding: '0.5rem', borderRight: i < vals.length-1 ? '1px solid var(--border-color)' : 'none', color: isDiff ? '#fca5a5' : 'var(--text-main)', wordBreak: 'break-word', minWidth: '150px' }}>
+                                        {val}
+                                      </td>
+                                    ))}
+                                  </tr>
+                                )
+                              })}
+                            </tbody>
+                          </table>
                         </div>
                       )
-                    })}
+                    })()}
                   </div>
                 </div>
               ) : (
@@ -368,12 +399,7 @@ const DataTable = ({ data, columns, duplicatesReport }) => {
                   <div 
                     key={idx} 
                     onClick={() => {
-                      // Find full row data
-                      const fullRow = filteredData.find(r => {
-                        const woKey = Object.keys(r).find(k => k.trim().toUpperCase() === 'WORKORDER');
-                        return woKey && String(r[woKey]).trim() === dup.workorder;
-                      });
-                      setSelectedDup({ ...dup, fullData: fullRow });
+                      setSelectedDup(dup);
                     }} 
                     style={{ background: 'var(--bg-dark)', padding: '0.75rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', cursor: 'pointer' }}
                     onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--text-muted)'}
