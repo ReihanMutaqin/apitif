@@ -58,6 +58,7 @@ const DataTable = ({ data, columns, duplicatesReport }) => {
   const [activeFilters, setActiveFilters] = useState({});
   const [showSearchDetails, setShowSearchDetails] = useState(false);
   const [showDupModal, setShowDupModal] = useState(false);
+  const [selectedDup, setSelectedDup] = useState(null);
 
   // Base categorical columns definition (limit to 150 unique values to include WITEL)
   const baseCategoricalCols = useMemo(() => {
@@ -320,21 +321,26 @@ const DataTable = ({ data, columns, duplicatesReport }) => {
         <div style={{ position: 'fixed', inset: 0, zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center', background: 'rgba(0,0,0,0.7)', padding: '1rem' }}>
           <div style={{ background: 'var(--bg-card)', border: '1px solid var(--border-color)', borderRadius: '0.5rem', width: '100%', maxWidth: '500px', maxHeight: '80vh', display: 'flex', flexDirection: 'column' }}>
             <div style={{ padding: '1rem 1.25rem', borderBottom: '1px solid var(--border-color)', display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-              <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-main)' }}>Data Duplikat</h3>
-              <button onClick={() => setShowDupModal(false)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
+              {selectedDup ? (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                  <button onClick={() => setSelectedDup(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', padding: 0, display: 'flex' }} title="Kembali">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="15 18 9 12 15 6"></polyline></svg>
+                  </button>
+                  <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-main)' }}>Detail Duplikat</h3>
+                </div>
+              ) : (
+                <h3 style={{ margin: 0, fontSize: '1rem', color: 'var(--text-main)' }}>Data Duplikat</h3>
+              )}
+              <button onClick={() => { setShowDupModal(false); setSelectedDup(null); }} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer' }}>
                 <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
               </button>
             </div>
             <div style={{ padding: '1rem 1.25rem', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-              {filteredDuplicates.map((dup, idx) => (
-                <div key={idx} style={{ background: 'var(--bg-dark)', padding: '0.75rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)' }}>
-                  <div style={{ fontSize: '0.8125rem', color: 'var(--text-main)', marginBottom: '0.5rem', fontWeight: 500 }}>
-                    {dup.workorder}
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
-                    {dup.sources.map(src => {
-                      let color = '#9ca3af';
-                      let bg = 'rgba(156,163,175,0.1)';
+              {selectedDup ? (
+                <div>
+                  <div style={{ marginBottom: '1rem', display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
+                    {selectedDup.sources.map(src => {
+                      let color = '#9ca3af', bg = 'rgba(156,163,175,0.1)';
                       if (src === 'wappr') { color = '#3b82f6'; bg = 'rgba(59,130,246,0.1)'; }
                       else if (src === 'workfail') { color = '#ef4444'; bg = 'rgba(239,68,68,0.1)'; }
                       else if (src === 'tif2so') { color = '#10b981'; bg = 'rgba(16,185,129,0.1)'; }
@@ -345,8 +351,55 @@ const DataTable = ({ data, columns, duplicatesReport }) => {
                       );
                     })}
                   </div>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '0.5rem' }}>
+                    {selectedDup.fullData && Object.entries(selectedDup.fullData).map(([k, v]) => {
+                      if (k === '_source' || k === '_sources') return null;
+                      return (
+                        <div key={k} style={{ padding: '0.5rem', background: 'var(--bg-dark)', borderRadius: '0.375rem', border: '1px solid var(--border-color)' }}>
+                           <div style={{ fontSize: '0.65rem', color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '0.25rem', fontWeight: 600 }}>{k}</div>
+                           <div style={{ fontSize: '0.8125rem', color: 'var(--text-main)', wordBreak: 'break-word' }}>{v != null ? String(v) : '-'}</div>
+                        </div>
+                      )
+                    })}
+                  </div>
                 </div>
-              ))}
+              ) : (
+                filteredDuplicates.map((dup, idx) => (
+                  <div 
+                    key={idx} 
+                    onClick={() => {
+                      // Find full row data
+                      const fullRow = filteredData.find(r => {
+                        const woKey = Object.keys(r).find(k => k.trim().toUpperCase() === 'WORKORDER');
+                        return woKey && String(r[woKey]).trim() === dup.workorder;
+                      });
+                      setSelectedDup({ ...dup, fullData: fullRow });
+                    }} 
+                    style={{ background: 'var(--bg-dark)', padding: '0.75rem', borderRadius: '0.375rem', border: '1px solid var(--border-color)', cursor: 'pointer' }}
+                    onMouseEnter={e => e.currentTarget.style.borderColor = 'var(--text-muted)'}
+                    onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--border-color)'}
+                  >
+                    <div style={{ fontSize: '0.8125rem', color: 'var(--text-main)', marginBottom: '0.5rem', fontWeight: 500, display: 'flex', justifyContent: 'space-between' }}>
+                      <span>{dup.workorder}</span>
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-muted)" strokeWidth="2"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                    </div>
+                    <div style={{ display: 'flex', gap: '0.375rem', flexWrap: 'wrap' }}>
+                      {dup.sources.map(src => {
+                        let color = '#9ca3af';
+                        let bg = 'rgba(156,163,175,0.1)';
+                        if (src === 'wappr') { color = '#3b82f6'; bg = 'rgba(59,130,246,0.1)'; }
+                        else if (src === 'workfail') { color = '#ef4444'; bg = 'rgba(239,68,68,0.1)'; }
+                        else if (src === 'tif2so') { color = '#10b981'; bg = 'rgba(16,185,129,0.1)'; }
+                        return (
+                          <span key={src} style={{ fontSize: '0.65rem', padding: '0.125rem 0.375rem', borderRadius: '0.25rem', background: bg, color: color, border: `1px solid ${bg}` }}>
+                            Ditemukan di {src.toUpperCase()}
+                          </span>
+                        );
+                      })}
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
         </div>
