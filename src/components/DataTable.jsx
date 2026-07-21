@@ -48,7 +48,7 @@ const SortIcon = ({ direction }) => {
   );
 };
 
-const DataTable = ({ data, columns, duplicatesReport }) => {
+const DataTable = ({ data, columns, duplicatesReport, onRefresh, isRefreshing }) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState('');
   const [rowsPerPage, setRowsPerPage] = useState(50);
@@ -492,6 +492,21 @@ const DataTable = ({ data, columns, duplicatesReport }) => {
           <select className="dt-rows-select" value={rowsPerPage} onChange={handleRowsPerPage} title="Baris per halaman">
             {ROWS_OPTIONS.map(n => <option key={n} value={n}>{n} baris</option>)}
           </select>
+
+          {onRefresh && (
+            <button 
+              className="dt-export-btn" 
+              onClick={onRefresh} 
+              disabled={isRefreshing}
+              title="Refresh API Data"
+              style={{ background: 'var(--bg-hover)', color: 'var(--text-main)', border: '1px solid var(--border-color)', opacity: isRefreshing ? 0.7 : 1 }}
+            >
+              <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2" style={isRefreshing ? { animation: 'rotation 1s linear infinite' } : {}}>
+                <path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+              </svg>
+              {isRefreshing ? 'Refreshing...' : 'Refresh API'}
+            </button>
+          )}
 
           <button className="dt-export-btn" onClick={handleExportCSV} title="Ekspor data yang tampil ke CSV">
             <svg width="15" height="15" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2">

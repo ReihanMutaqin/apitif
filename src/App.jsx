@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import DataTable from './components/DataTable';
+import ESPVisualizer from './components/ESPVisualizer';
 import './index.css'; // Make sure the premium styles are applied
 
 function App() {
@@ -9,7 +10,8 @@ function App() {
   const [error, setError] = useState('');
   const [apiUrl, setApiUrl] = useState('http://10.2.113.250/wappr/api/data');
   const [duplicatesReport, setDuplicatesReport] = useState(null);
-  
+  const [showESP, setShowESP] = useState(false);
+
   const fileInputRef = useRef(null);
 
   // Helper to deduplicate exact matching rows
@@ -176,16 +178,32 @@ function App() {
   return (
     <div className="app-container">
       {/* ── Top Header ── */}
-      <header style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
-        <h1 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--primary-color)' }}>
-            <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
-            <line x1="8" y1="21" x2="16" y2="21"></line>
-            <line x1="12" y1="17" x2="12" y2="21"></line>
-          </svg>
-          Data Importer
-        </h1>
-        <p>Import JSON data via local file upload or fetch from remote API links</p>
+      <header style={{ display: 'flex', flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
+          <h1 style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{ color: 'var(--primary-color)' }}>
+              <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+              <line x1="8" y1="21" x2="16" y2="21"></line>
+              <line x1="12" y1="17" x2="12" y2="21"></line>
+            </svg>
+            Data Importer
+          </h1>
+          <p>Import JSON data via local file upload or fetch from remote API links</p>
+        </div>
+        {/* ── ESP Toggle Button ── */}
+        {data && columns.length > 0 && (
+          <button
+            className={`btn esp-toggle-btn${showESP ? ' esp-toggle-active' : ''}`}
+            onClick={() => setShowESP(v => !v)}
+            title={showESP ? 'Kembali ke tabel' : 'Aktifkan ESP Overlay View'}
+          >
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+              <circle cx="12" cy="12" r="3"/>
+            </svg>
+            {showESP ? 'Tabel View' : 'ESP View'}
+          </button>
+        )}
       </header>
 
       {/* ── Control Panel ── */}
@@ -289,9 +307,11 @@ function App() {
         </div>
       )}
 
-      {/* ── Data Table ── */}
-      {!loading && data && columns.length > 0 && (
-        <DataTable data={data} columns={columns} duplicatesReport={duplicatesReport} />
+      {/* ── Data Table / ESP View ── */}
+      {data && columns.length > 0 && (
+        showESP
+          ? <ESPVisualizer data={data} columns={columns} onClose={() => setShowESP(false)} />
+          : <DataTable data={data} columns={columns} duplicatesReport={duplicatesReport} onRefresh={handleFetchAll} isRefreshing={loading} />
       )}
     </div>
   );
